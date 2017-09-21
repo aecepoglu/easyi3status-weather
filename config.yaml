@@ -1,0 +1,7 @@
+- name: weather
+  config:
+    city: 6955677 #enter an id from http://openweathermap.org/help/city_list.txt
+    #appid: ENTER openweathermap appid here http://openweathermap.org/appid
+    units: metric
+    #language: en
+    minWindSpeed: 5
