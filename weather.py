@@ -66,13 +66,14 @@ class Module(EasyI3StatusModule):
 				'color': '#9090ff'
 			})
 			self.values.append({
-				'full_text': '?',
-				'separator_block_width': 40 if (i is 3) else 10
+				'full_text': '?'
 			})
 
 		self.minWindSpeed = config.get('minWindSpeed', 5)
 		self.isBusy = False
 		self.hasError = False
+		self.wantedHours = config.get('wantedHours', list(range(0, 23, 3)))
+		self.wantedHoursCount = int(12 / 4) + 1
 
 		self.update()
 	
@@ -84,10 +85,18 @@ class Module(EasyI3StatusModule):
 			return
 		
 		jsonobj = resp.json()
+		lastDoneIndex = None
 
-		for index in range(0, 4):
-			record = jsonobj['list'][index]
-			prevRecord = jsonobj['list'][index - 1] if (index > 0) else None
+		for index in range(0, min(len(jsonobj['list']), self.wantedHoursCount)):
+			record = jsonobj['list'][index]	
+			prevRecord = jsonobj['list'][index -1] if index > 0 else None
+
+			itsTime = time.gmtime(record['dt'])
+
+			if itsTime.tm_hour not in self.wantedHours:
+				self.values[index * 2]['full_text'] = ''
+				self.values[index * 2 + 1]['full_text'] = ''
+				continue
 
 			recordDescriptions = [
 				str(int(record['main']['temp'])) + u'°'
@@ -101,9 +110,15 @@ class Module(EasyI3StatusModule):
 					Module.getCardinalWindDirection(record['wind']['deg']) + ' ' + str(record['wind']['speed']),
 				)
 
-			self.values[index * 2]['full_text'] = time.strftime('%H:%M', time.gmtime(record['dt']))
+			lastDoneIndex = index
+			self.values[index * 2]['full_text'] = time.strftime('%H:%M', itsTime)
 			self.values[index * 2 + 1]['full_text'] = ' '.join(recordDescriptions)
+			self.values[index * 2 + 1]['separator_block_width'] = 10
+
+		if lastDoneIndex is not None:
+			self.values[lastDoneIndex * 2 + 1]['separator_block_width'] = 40
 
 	def update(self):
 		if not self.hasError and not self.isBusy:
 			Thread(target=self.work).start()
+

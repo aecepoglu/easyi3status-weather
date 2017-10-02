@@ -21,8 +21,9 @@
 * `units`: *metric* or *imperial*
 * `language`: a language code from [here](http://openweathermap.org/forecast5#multi). *en* by default
 * `minWindSpeed`: if wind speed is greater than this, then its speed and direction will be shown
+* `wantedHours`: list of which 3-hour intervals to display. Defaults to `[0,3,6,9,12,15,18,21]`
 
 # TODO
 
 * Be able to toggle between current weather and 3-hour forecast
-* Be able to specify which 3-hour intervals to display
+* ~~Be able to specify which 3-hour intervals to display~~
